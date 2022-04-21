@@ -8,6 +8,17 @@ today = datetime.today().strftime('%Y-%m-%d')
 
 # TODO: make all this async
 
+class Colors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 
 def get_s_lucas():  # lab s. Lucas
     get = req.request(
@@ -107,8 +118,9 @@ def main():
     db = get_diag_br()
     s_lucas = get_s_lucas()
 
-    print(f"Hoje é: {today}\nColetando dados...\n\n")
-    print(f"S. Lucas possui {s_lucas['totalRecords']} vagas: ")
+    print(f"{Colors.HEADER}Hoje é: {today}\nColetando dados...\n\n{Colors.ENDC}")
+    print(
+        f"{Colors.BOLD}S. Lucas possui {s_lucas['totalRecords']} vagas:{Colors.ENDC}")
     for item in s_lucas["data"]:
         nome_vaga = item["name"]
         cidade = item["city"]["name"]
@@ -116,14 +128,14 @@ def main():
         url = item["linkVacancy"]
         print(
             f"""
-        \rVaga: {nome_vaga}
+        \r{Colors.OKGREEN}Vaga: {nome_vaga}{Colors.ENDC}
         \rCidade: {cidade}
         \rEmpresa: {empresa}
         \rLink: {url}
     """)
 
     print(
-        f"\n\nDB Diagnósticos possui {db['found']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório:"
+        f"{Colors.BOLD}\n\nDB Diagnósticos possui {db['found']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório: {Colors.ENDC}"
     )
 
     for items in db["vacancies"]:
@@ -136,7 +148,7 @@ def main():
             mais_info = get_diagbr_info(vaga_id)
             print(
                 f"""
-                \rVaga: {vaga_titulo}
+                \r{Colors.OKGREEN}Vaga: {vaga_titulo}{Colors.ENDC}
                 \rLocal: {vaga_local}
                 \rLink da vaga: {link}
                 \rData-fim da vaga: {mais_info['endDate']}
