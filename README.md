@@ -13,3 +13,7 @@ Não acredito que seja muito útil, a não ser que você seja um biomédico em b
 ou
 
 `python3 scraper.py`
+
+# Fontes
+
+Atualmente o script acessa [DB-Diagnósticos](https://platform.senior.com.br/hcmrs/hcm/curriculo/?tenant=dbdiagnosticos&tenantdomain=dbdiagnosticos.com.br#!/vacancies/list) e [Lab. S. Lucas](https://laboratoriosaolucas.solides.jobs/vacancies/), adicionarei mais links no futuro
