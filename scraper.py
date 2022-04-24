@@ -2,8 +2,10 @@ import requests as req
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
 import re
-
+# from json import dumps
+import json
 today = datetime.today().strftime('%Y-%m-%d')
+regex = r"(.*[Ll][A|a][B|b].*)|(.*[Bb][Ii][oO].*)"  # filtrando vagas..
 
 
 # TODO: make all this async
@@ -83,40 +85,43 @@ def get_diagbr_info(id: str):  # links para as postagens
     return post.json()
 
 
-def shorten(link: str):
-    with req.session() as sess:
-        post = sess.request(
-            "POST", "https://tinyurl.com/app/api/create",
-            headers={
-                "Host": "tinyurl.com",
-                "Origin":	"https://tinyurl.com",
-                "Referer": "https://tinyurl.com/app/",
-                "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0",
-                "Accept": r"*/*",
-                "Accept-Language": "en-US,en;q=0.5",
-                "Accept-Encoding": "gzip, deflate, br",
-                "X-Requested-With": "XMLHttpRequest",
-                "Content-Type": "application/json",
-            },
-            json={
-                "alias": "",
-                "busy":	"true",
-                "domain":	"tinyurl.com",
-                "errors":	{
-                    "errors":	{}
-
-                },
-                "successful":	"false",
-                "tags":	[],
-                "url":	link,
+def sabin():
+    jobs = []
+    get = req.request(
+        "GET", "https://jobs.kenoby.com/sabin-site/position?search=&=")
+    soup = bs(get.text, "lxml")
+    area_tecnica = soup.find_all(
+        "a",
+        {
+            "data-segment": "Área Técnica",
+            "data-state": "SP",
+            "data-title": re.compile(regex)
+        }
+    )
+    for items in area_tecnica:
+        name = items["data-title"]
+        city = items["data-city"]
+        neighborhood = items["data-neighborhood"]
+        state = items["data-state"]
+        link = items["href"]
+        jobs.append(
+            {
+                "name": name,
+                "city": city,
+                "neighborhood": neighborhood,
+                "state": state,
+                "link": link,
+                "qtd": len(area_tecnica)
             }
         )
-        return post.json()
+
+    return jobs
 
 
 def main():
     db = get_diag_br()
     s_lucas = get_s_lucas()
+    lab_sabin = sabin()
 
     print(f"{Colors.HEADER}Hoje é: {today}\nColetando dados...\n\n{Colors.ENDC}")
     print(
@@ -142,7 +147,6 @@ def main():
         vaga_titulo = items["title"]
         vaga_local = items["location"]
         vaga_id = items["id"]
-        regex = r"(.LAB.)|(.?BIO.)"  # filtrando vagas..
         if bool(re.search(regex, vaga_titulo)):
             link = f"https://platform.senior.com.br/hcmrs/hcm/curriculo/?tenant=dbdiagnosticos&tenantdomain=dbdiagnosticos.com.br&vacancyId={vaga_id}&fromRecruitment=false#!/vacancies/details/{vaga_id}/?order=HIGHLIGHT&page=0&fromRecruitment=false"
             mais_info = get_diagbr_info(vaga_id)
@@ -154,6 +158,17 @@ def main():
                 \rData-fim da vaga: {mais_info['endDate']}
                 """
             )
+    print(
+        f"{Colors.BOLD}\n\nSabin Med. Diag {lab_sabin[0]['qtd']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório: {Colors.ENDC}"
+    )
+    for items in lab_sabin:
+        print(
+            f"""
+            \r{Colors.OKGREEN}Vaga: {items["name"]} {Colors.ENDC}
+            \rlocal: {items["city"]} - {items["state"]}
+            link: \r{items["link"]}
+            """
+        )
 
 
 if __name__ == '__main__':
