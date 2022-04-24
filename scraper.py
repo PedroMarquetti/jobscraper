@@ -2,13 +2,13 @@ import requests as req
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
 import re
-# from json import dumps
-import json
+
 today = datetime.today().strftime('%Y-%m-%d')
 regex = r"(.*[Ll][A|a][B|b].*)|(.*[Bb][Ii][oO].*)"  # filtrando vagas..
-
+USR_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0"
 
 # TODO: make all this async
+
 
 class Colors:
     HEADER = '\033[95m'
@@ -27,7 +27,7 @@ def get_s_lucas():  # lab s. Lucas
         "GET",
         r"https://api.solides.jobs/v2/vacancy/search?reference_id=92055&search=&vacancyType=jobs",
         headers={
-            "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0"
+            "User-Agent": USR_AGENT
         }
     )
     return get.json()
@@ -38,7 +38,7 @@ def get_diag_br():  # DB diag. do Brasil
         "POST", "https://platform.senior.com.br/t/senior.com.br/bridge/1.0/anonymous/rest/hcm/vacancymanagement/queries/searchPublicVacancies",
         headers={
                 "Host": "platform.senior.com.br",
-                "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0",
+                "User-Agent": USR_AGENT,
                 "Accept": "application/json, text/plain, */*",
                 "Accept-Language": "pt-BR",
                 "Accept-Encoding": "gzip, deflate, br",
@@ -66,7 +66,7 @@ def get_diagbr_info(id: str):  # links para as postagens
         "POST", "https://platform.senior.com.br/t/senior.com.br/bridge/1.0/anonymous/rest/hcm/vacancymanagement/queries/publishedVacancyDetails",
         headers={
                 "Host": "platform.senior.com.br",
-                "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0",
+                "User-Agent": USR_AGENT,
                 "Accept": "application/json, text/plain, */*",
                 "Accept-Language": "pt-BR",
                 "Accept-Encoding": "gzip, deflate, br",
