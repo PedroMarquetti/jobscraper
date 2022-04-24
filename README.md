@@ -16,4 +16,4 @@ ou
 
 # Fontes
 
-Atualmente o script acessa [DB-Diagnósticos](https://platform.senior.com.br/hcmrs/hcm/curriculo/?tenant=dbdiagnosticos&tenantdomain=dbdiagnosticos.com.br#!/vacancies/list) e [Lab. S. Lucas](https://laboratoriosaolucas.solides.jobs/vacancies/), adicionarei mais links no futuro
+Atualmente o script acessa [Sabin Medicina Diagnóstica](https://jobs.kenoby.com/sabin-site), [DB-Diagnósticos](https://platform.senior.com.br/hcmrs/hcm/curriculo/?tenant=dbdiagnosticos&tenantdomain=dbdiagnosticos.com.br#!/vacancies/list) e [Lab. S. Lucas](https://laboratoriosaolucas.solides.jobs/vacancies/), adicionarei mais links no futuro
