@@ -4,7 +4,7 @@ from datetime import datetime
 import re
 
 today = datetime.today().strftime('%Y-%m-%d')
-regex = r"(.*[Ll][A|a][B|b].*)|(.*[Bb][Ii][oO].*)"  # filtrando vagas..
+regex = r"(.*[Ll][Aa][Bb].*)|(.*[Bb][Ii][oO].*)"  # filtrando vagas..
 USR_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0"
 
 # TODO: make all this async
