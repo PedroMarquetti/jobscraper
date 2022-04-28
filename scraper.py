@@ -1,4 +1,5 @@
-import requests as req
+import aiohttp
+import asyncio
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
 import re
@@ -6,8 +7,6 @@ import re
 today = datetime.today().strftime('%Y-%m-%d')
 regex = r"(.*[Ll][Aa][Bb].*)|(.*[Bb][Ii][oO].*)"  # filtrando vagas..
 USR_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0"
-
-# TODO: make all this async
 
 
 class Colors:
@@ -22,21 +21,22 @@ class Colors:
     UNDERLINE = '\033[4m'
 
 
-def get_s_lucas():  # lab s. Lucas
-    get = req.request(
-        "GET",
-        r"https://api.solides.jobs/v2/vacancy/search?reference_id=92055&search=&vacancyType=jobs",
-        headers={
-            "User-Agent": USR_AGENT
-        }
-    )
-    return get.json()
+async def get_s_lucas():  # lab s. Lucas
+    async with aiohttp.ClientSession() as sess:
+        async with sess.get(
+            r"https://api.solides.jobs/v2/vacancy/search?reference_id=92055&search=&vacancyType=jobs",
+            headers={
+                "User-Agent": USR_AGENT
+            }
+        ) as response:
+            return await response.json()
 
 
-def get_diag_br():  # DB diag. do Brasil
-    post = req.request(
-        "POST", "https://platform.senior.com.br/t/senior.com.br/bridge/1.0/anonymous/rest/hcm/vacancymanagement/queries/searchPublicVacancies",
-        headers={
+async def get_diag_br():  # DB diag. do Brasil
+    async with aiohttp.ClientSession() as sess:
+        async with sess.post(
+            "https://platform.senior.com.br/t/senior.com.br/bridge/1.0/anonymous/rest/hcm/vacancymanagement/queries/searchPublicVacancies",
+            headers={
                 "Host": "platform.senior.com.br",
                 "User-Agent": USR_AGENT,
                 "Accept": "application/json, text/plain, */*",
@@ -47,24 +47,24 @@ def get_diag_br():  # DB diag. do Brasil
                 "x-tenant": "dbdiagnosticos",
                 "X-TenantDomain": "dbdiagnosticos.com.br",
                 "Origin": "https://platform.senior.com.br",
-        },
+            },
+            json={
+                "q": "",
+                "hqId": "",
+                "currentDate": today,
+                "order": "HIGHLIGHT",
+                "page": 0,
+                "size": 100
+            }
+        ) as response:
+            return await response.json()
 
-        json={
-            "q": "",
-            "hqId": "",
-            "currentDate": today,
-            "order": "HIGHLIGHT",
-            "page": 0,
-            "size": 100
-        }
-    )
-    return post.json()
 
-
-def get_diagbr_info(id: str):  # links para as postagens
-    post = req.request(
-        "POST", "https://platform.senior.com.br/t/senior.com.br/bridge/1.0/anonymous/rest/hcm/vacancymanagement/queries/publishedVacancyDetails",
-        headers={
+async def get_diagbr_info(id: str):  # links para as postagens
+    async with aiohttp.ClientSession() as sess:
+        async with sess.post(
+            "https://platform.senior.com.br/t/senior.com.br/bridge/1.0/anonymous/rest/hcm/vacancymanagement/queries/publishedVacancyDetails",
+            headers={
                 "Host": "platform.senior.com.br",
                 "User-Agent": USR_AGENT,
                 "Accept": "application/json, text/plain, */*",
@@ -75,53 +75,56 @@ def get_diagbr_info(id: str):  # links para as postagens
                 "x-tenant": "dbdiagnosticos",
                 "X-TenantDomain": "dbdiagnosticos.com.br",
                 "Origin": "https://platform.senior.com.br",
-        },
+            },
 
-        json={
-            "id": f"{id}",
-            "currentDate": today
-        }
-    )
-    return post.json()
-
-
-def sabin():
-    jobs = []
-    get = req.request(
-        "GET", "https://jobs.kenoby.com/sabin-site/position?search=&=")
-    soup = bs(get.text, "lxml")
-    area_tecnica = soup.find_all(
-        "a",
-        {
-            "data-segment": "Área Técnica",
-            "data-state": "SP",
-            "data-title": re.compile(regex)
-        }
-    )
-    for items in area_tecnica:
-        name = items["data-title"]
-        city = items["data-city"]
-        neighborhood = items["data-neighborhood"]
-        state = items["data-state"]
-        link = items["href"]
-        jobs.append(
-            {
-                "name": name,
-                "city": city,
-                "neighborhood": neighborhood,
-                "state": state,
-                "link": link,
-                "qtd": len(area_tecnica)
+            json={
+                "id": f"{id}",
+                "currentDate": today
             }
-        )
+        ) as response:
+            return await response.json()
 
-    return jobs
+
+async def sabin():
+    jobs = []
+    async with aiohttp.ClientSession() as sess:
+        async with sess.get(
+            "https://jobs.kenoby.com/sabin-site/position?search=&="
+        ) as response:
+
+            soup = bs(response.text, "lxml")
+            area_tecnica = soup.find_all(
+                "a",
+                {
+                    "data-segment": "Área Técnica",
+                    "data-state": "SP",
+                    "data-title": re.compile(regex)
+                }
+            )
+            for items in area_tecnica:
+                name = items["data-title"]
+                city = items["data-city"]
+                neighborhood = items["data-neighborhood"]
+                state = items["data-state"]
+                link = items["href"]
+                jobs.append(
+                    {
+                        "name": name,
+                        "city": city,
+                        "neighborhood": neighborhood,
+                        "state": state,
+                        "link": link,
+                        "qtd": len(area_tecnica)
+                    }
+                )
+
+                return await jobs
 
 
-def main():
-    db = get_diag_br()
-    s_lucas = get_s_lucas()
-    lab_sabin = sabin()
+async def main():
+    db = await get_diag_br()
+    s_lucas = await get_s_lucas()
+    # lab_sabin = await sabin()
 
     print(f"{Colors.HEADER}Hoje é: {today}\nColetando dados...\n\n{Colors.ENDC}")
     print(
@@ -149,7 +152,7 @@ def main():
         vaga_id = items["id"]
         if bool(re.search(regex, vaga_titulo)):
             link = f"https://platform.senior.com.br/hcmrs/hcm/curriculo/?tenant=dbdiagnosticos&tenantdomain=dbdiagnosticos.com.br&vacancyId={vaga_id}&fromRecruitment=false#!/vacancies/details/{vaga_id}/?order=HIGHLIGHT&page=0&fromRecruitment=false"
-            mais_info = get_diagbr_info(vaga_id)
+            mais_info = await get_diagbr_info(vaga_id)
             print(
                 f"""
                 \r{Colors.OKGREEN}Vaga: {vaga_titulo}{Colors.ENDC}
@@ -158,18 +161,20 @@ def main():
                 \rData-fim da vaga: {mais_info['endDate']}
                 """
             )
-    print(
-        f"{Colors.BOLD}\n\nSabin Med. Diag {lab_sabin[0]['qtd']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório: {Colors.ENDC}"
-    )
-    for items in lab_sabin:
-        print(
-            f"""
-            \r{Colors.OKGREEN}Vaga: {items["name"]} {Colors.ENDC}
-            \rlocal: {items["city"]} - {items["state"]}
-            link: \r{items["link"]}
-            """
-        )
+
+    # print(
+    #     f"{Colors.BOLD}\n\nSabin Med. Diag {lab_sabin[0]['qtd']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório: {Colors.ENDC}"
+    # )
+    # for items in lab_sabin:
+    #     print(
+    #         f"""
+    #         \r{Colors.OKGREEN}Vaga: {items["name"]} {Colors.ENDC}
+    #         \rlocal: {items["city"]} - {items["state"]}
+    #         link: \r{items["link"]}
+    #         """
+    #     )
 
 
 if __name__ == '__main__':
-    main()
+
+    asyncio.run(main())
