@@ -4,6 +4,8 @@ Criei esse script pra facilitar minha vida, para que eu não tenha que entrar em
 
 Não acredito que seja muito útil, a não ser que você seja um biomédico em busca de emprego
 
+**Essa é a Branch aiohttp, que criei para fazer requests asíncronas**
+
 # Como rodar:
 
 `py -m pip3 install -r requirements.txt`
