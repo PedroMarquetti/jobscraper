@@ -25,7 +25,7 @@ class Colors:
 def get_s_lucas():  # lab s. Lucas
     get = req.request(
         "GET",
-        r"https://api.solides.jobs/v2/vacancy/search?reference_id=92055&search=&vacancyType=jobs",
+        "https://api.solides.jobs/v2/vacancy/search?reference_id=92055&search=&vacancyType=jobs",
         headers={
             "User-Agent": USR_AGENT
         }
@@ -119,11 +119,11 @@ def sabin():
 
 
 def main():
+    print(f"{Colors.HEADER}Hoje é: {today}\nColetando dados...\n\n{Colors.ENDC}")
     db = get_diag_br()
     s_lucas = get_s_lucas()
     lab_sabin = sabin()
 
-    print(f"{Colors.HEADER}Hoje é: {today}\nColetando dados...\n\n{Colors.ENDC}")
     print(
         f"{Colors.BOLD}S. Lucas possui {s_lucas['totalRecords']} vagas:{Colors.ENDC}")
     for item in s_lucas["data"]:
