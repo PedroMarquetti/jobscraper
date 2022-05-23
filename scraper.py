@@ -1,8 +1,10 @@
+from pickletools import decimalnl_long, decimalnl_short
 import aiohttp
 import asyncio
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
 import re
+import time
 
 today = datetime.today().strftime('%Y-%m-%d')
 regex = r"(.*[Ll][Aa][Bb].*)|(.*[Bb][Ii][oO].*)"  # filtrando vagas..
@@ -122,8 +124,8 @@ async def sabin():
 
 async def main():
     print(f"{Colors.HEADER}Hoje é: {today}\nColetando dados...\n\n{Colors.ENDC}")
-    lab_sabin = await sabin()
 
+    lab_sabin = await sabin()
     db = await get_diag_br()
     s_lucas = await get_s_lucas()
 
@@ -145,7 +147,6 @@ async def main():
     print(
         f"{Colors.BOLD}\n\nDB Diagnósticos possui {db['found']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório: {Colors.ENDC}"
     )
-
     for items in db["vacancies"]:
         vaga_titulo = items["title"]
         vaga_local = items["location"]
@@ -176,5 +177,8 @@ async def main():
 
 
 if __name__ == '__main__':
-
+    start = time.time()
     asyncio.run(main())
+    end = time.time()
+    total_time = end - start
+    print(f"{Colors.OKBLUE}tempo total de execução: {round(total_time,2)}s{Colors.ENDC}")
