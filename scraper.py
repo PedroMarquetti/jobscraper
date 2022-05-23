@@ -2,6 +2,7 @@ import requests as req
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
 import re
+import time
 
 today = datetime.today().strftime('%Y-%m-%d')
 regex = r"(.*[Ll][Aa][Bb].*)|(.*[Bb][Ii][oO].*)"  # filtrando vagas..
@@ -172,4 +173,8 @@ def main():
 
 
 if __name__ == '__main__':
+    start = time.time()
     main()
+    end = time.time()
+    total = end-start
+    print(f"{Colors.OKBLUE}tempo total de execução: {round(total,2)}s{Colors.ENDC}")
