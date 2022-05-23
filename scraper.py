@@ -91,8 +91,8 @@ async def sabin():
         async with sess.get(
             "https://jobs.kenoby.com/sabin-site/position?search=&="
         ) as response:
-
-            soup = bs(response.text, "lxml")
+            # response.text() << aiohttp get html text (and await it)
+            soup = bs(await response.text(), "lxml")
             area_tecnica = soup.find_all(
                 "a",
                 {
@@ -117,16 +117,16 @@ async def sabin():
                         "qtd": len(area_tecnica)
                     }
                 )
-
-                return await jobs
+                return jobs
 
 
 async def main():
+    print(f"{Colors.HEADER}Hoje é: {today}\nColetando dados...\n\n{Colors.ENDC}")
+    lab_sabin = await sabin()
+
     db = await get_diag_br()
     s_lucas = await get_s_lucas()
-    # lab_sabin = await sabin()
 
-    print(f"{Colors.HEADER}Hoje é: {today}\nColetando dados...\n\n{Colors.ENDC}")
     print(
         f"{Colors.BOLD}S. Lucas possui {s_lucas['totalRecords']} vagas:{Colors.ENDC}")
     for item in s_lucas["data"]:
@@ -162,17 +162,17 @@ async def main():
                 """
             )
 
-    # print(
-    #     f"{Colors.BOLD}\n\nSabin Med. Diag {lab_sabin[0]['qtd']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório: {Colors.ENDC}"
-    # )
-    # for items in lab_sabin:
-    #     print(
-    #         f"""
-    #         \r{Colors.OKGREEN}Vaga: {items["name"]} {Colors.ENDC}
-    #         \rlocal: {items["city"]} - {items["state"]}
-    #         link: \r{items["link"]}
-    #         """
-    #     )
+    print(
+        f"{Colors.BOLD}\n\nSabin Med. Diag {lab_sabin[0]['qtd']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório: {Colors.ENDC}"
+    )
+    for items in lab_sabin:
+        print(
+            f"""
+            \r{Colors.OKGREEN}Vaga: {items["name"]} {Colors.ENDC}
+            \rlocal: {items["city"]} - {items["state"]}
+            link: \r{items["link"]}
+            """
+        )
 
 
 if __name__ == '__main__':
