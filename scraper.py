@@ -1,4 +1,3 @@
-from pickletools import decimalnl_long, decimalnl_short
 import aiohttp
 import asyncio
 from bs4 import BeautifulSoup as bs
@@ -6,8 +5,8 @@ from datetime import datetime
 import re
 import time
 
-today = datetime.today().strftime('%Y-%m-%d')
-regex = r"(.*[Ll][Aa][Bb].*)|(.*[Bb][Ii][oO].*)"  # filtrando vagas..
+TODAY = datetime.today().strftime('%Y-%m-%d')
+REGEX = r"(.*[Ll][Aa][Bb].*)|(.*[Bb][Ii][oO].*)"  # filtrando vagas..
 USR_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0"
 
 
@@ -53,7 +52,7 @@ async def get_diag_br():  # DB diag. do Brasil
             json={
                 "q": "",
                 "hqId": "",
-                "currentDate": today,
+                "currentDate": TODAY,
                 "order": "HIGHLIGHT",
                 "page": 0,
                 "size": 100
@@ -81,7 +80,7 @@ async def get_diagbr_info(id: str):  # links para as postagens
 
             json={
                 "id": f"{id}",
-                "currentDate": today
+                "currentDate": TODAY
             }
         ) as response:
             return await response.json()
@@ -100,10 +99,11 @@ async def sabin():
                 {
                     "data-segment": "Área Técnica",
                     "data-state": "SP",
-                    "data-title": re.compile(regex)
+                    "data-title": re.compile(REGEX)
                 }
             )
             for items in area_tecnica:
+
                 name = items["data-title"]
                 city = items["data-city"]
                 neighborhood = items["data-neighborhood"]
@@ -119,11 +119,11 @@ async def sabin():
                         "qtd": len(area_tecnica)
                     }
                 )
-                return jobs
+    return jobs
 
 
 async def main():
-    print(f"{Colors.HEADER}Hoje é: {today}\nColetando dados...\n\n{Colors.ENDC}")
+    print(f"{Colors.HEADER}Hoje é: {TODAY}\nColetando dados...\n\n{Colors.ENDC}")
 
     lab_sabin = await sabin()
     db = await get_diag_br()
@@ -151,7 +151,7 @@ async def main():
         vaga_titulo = items["title"]
         vaga_local = items["location"]
         vaga_id = items["id"]
-        if bool(re.search(regex, vaga_titulo)):
+        if bool(re.search(REGEX, vaga_titulo)):
             link = f"https://platform.senior.com.br/hcmrs/hcm/curriculo/?tenant=dbdiagnosticos&tenantdomain=dbdiagnosticos.com.br&vacancyId={vaga_id}&fromRecruitment=false#!/vacancies/details/{vaga_id}/?order=HIGHLIGHT&page=0&fromRecruitment=false"
             mais_info = await get_diagbr_info(vaga_id)
             print(
