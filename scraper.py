@@ -34,6 +34,17 @@ def get_s_lucas():  # lab s. Lucas
     return get.json()
 
 
+def get_pasteur():  # lab s. Lucas
+    get = req.request(
+        "GET",
+        "https://api.solides.jobs/v2/vacancy/search?reference_id=107102&page=1&pagination=255&vacancyType=jobs",
+        headers={
+            "User-Agent": USR_AGENT
+        }
+    )
+    return get.json()
+
+
 def get_diag_br():  # DB diag. do Brasil
     post = req.request(
         "POST", "https://platform.senior.com.br/t/senior.com.br/bridge/1.0/anonymous/rest/hcm/vacancymanagement/queries/searchPublicVacancies",
@@ -124,6 +135,7 @@ def main():
     db = get_diag_br()
     s_lucas = get_s_lucas()
     lab_sabin = sabin()
+    pasteur = get_pasteur()
 
     print(
         f"{Colors.BOLD}S. Lucas possui {s_lucas['totalRecords']} vagas:{Colors.ENDC}")
@@ -140,6 +152,20 @@ def main():
         \rLink: {url}
     """)
 
+    print(
+        f"{Colors.BOLD}Lab. Pasteur possui {pasteur['totalRecords']} vagas:{Colors.ENDC}")
+    for item in pasteur["data"]:
+        nome_vaga = item["name"]
+        cidade = item["city"]["name"]
+        empresa = item["company"]["name"]
+        url = item["linkVacancy"]
+        print(
+            f"""
+        \r{Colors.OKGREEN}Vaga: {nome_vaga}{Colors.ENDC}
+        \rCidade: {cidade}
+        \rEmpresa: {empresa}
+        \rLink: {url}
+    """)
     print(
         f"{Colors.BOLD}\n\nDB Diagnósticos possui {db['found']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório: {Colors.ENDC}"
     )
