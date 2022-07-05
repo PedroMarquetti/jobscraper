@@ -26,7 +26,18 @@ class Colors:
 def get_s_lucas():  # lab s. Lucas
     get = req.request(
         "GET",
-        "https://api.solides.jobs/v2/vacancy/search?reference_id=92055&search=&vacancyType=jobs",
+        "https://api.solides.jobs/v2/vacancy/search?reference_id=92055&search=&pagination=255&vacancyType=jobs",
+        headers={
+            "User-Agent": USR_AGENT
+        }
+    )
+    return get.json()
+
+
+def get_biofast():  # lab biofast
+    get = req.request(
+        "GET",
+        "https://api.solides.jobs/v2/vacancy/search?reference_id=83325&search=&pagination=255&vacancyType=jobs",
         headers={
             "User-Agent": USR_AGENT
         }
@@ -126,14 +137,15 @@ def sabin():
                 "qtd": len(area_tecnica)
             }
         )
-
     return jobs
 
 
 def main():
     print(f"{Colors.HEADER}Hoje é: {today}\nColetando dados...\n\n{Colors.ENDC}")
-    db = get_diag_br()
+
+    biofast = get_biofast()
     s_lucas = get_s_lucas()
+    db = get_diag_br()
     lab_sabin = sabin()
     pasteur = get_pasteur()
 
@@ -150,7 +162,24 @@ def main():
         \rCidade: {cidade}
         \rEmpresa: {empresa}
         \rLink: {url}
-    """)
+        """
+        )
+
+    print(
+        f"{Colors.BOLD}Biofast possui {biofast['totalRecords']} vagas:{Colors.ENDC}"
+    )
+    for item in biofast["data"]:
+        nome_vaga = item["name"]
+        cidade = item["city"]["name"]
+        empresa = item["company"]["name"]
+        url = item["linkVacancy"]
+        print(
+            f"""
+        \r{Colors.OKGREEN}Vaga: {nome_vaga}{Colors.ENDC}
+        \rCidade: {cidade}
+        \rEmpresa: {empresa}
+        \rLink: {url}
+        """)
 
     print(
         f"{Colors.BOLD}Lab. Pasteur possui {pasteur['totalRecords']} vagas:{Colors.ENDC}")
