@@ -4,8 +4,8 @@ from datetime import datetime
 import re
 import time
 
-today = datetime.today().strftime('%Y-%m-%d')
-regex = r"(.*[Ll][Aa][Bb].*)|(.*[Bb][Ii][oO].*)"  # filtrando vagas..
+TODAY = datetime.today().strftime('%Y-%m-%d')
+REGEX = r"(.*[Ll][Aa][Bb].*)|(.*[Bb][Ii][oO].*)"  # filtrando vagas..
 USR_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0"
 
 # TODO: make all this async
@@ -75,7 +75,7 @@ def get_diag_br():  # DB diag. do Brasil
         json={
             "q": "",
             "hqId": "",
-            "currentDate": today,
+            "currentDate": TODAY,
             "order": "HIGHLIGHT",
             "page": 0,
             "size": 100
@@ -102,7 +102,7 @@ def get_diagbr_info(id: str):  # links para as postagens
 
         json={
             "id": f"{id}",
-            "currentDate": today
+            "currentDate": TODAY
         }
     )
     return post.json()
@@ -118,7 +118,7 @@ def sabin():
         {
             "data-segment": "Área Técnica",
             "data-state": "SP",
-            "data-title": re.compile(regex)
+            "data-title": re.compile(REGEX)
         }
     )
     for items in area_tecnica:
@@ -141,7 +141,7 @@ def sabin():
 
 
 def main():
-    print(f"{Colors.HEADER}Hoje é: {today}\nColetando dados...\n\n{Colors.ENDC}")
+    print(f"{Colors.HEADER}Hoje é: {TODAY}\nColetando dados...\n\n{Colors.ENDC}")
 
     biofast = get_biofast()
     s_lucas = get_s_lucas()
@@ -149,82 +149,100 @@ def main():
     lab_sabin = sabin()
     pasteur = get_pasteur()
 
-    print(
-        f"{Colors.BOLD}S. Lucas possui {s_lucas['totalRecords']} vagas:{Colors.ENDC}")
-    for item in s_lucas["data"]:
-        nome_vaga = item["name"]
-        cidade = item["city"]["name"]
-        empresa = item["company"]["name"]
-        url = item["linkVacancy"]
+    if s_lucas['totalRecords'] == 0:
+        print(f"{Colors.FAIL}Nenhuma vaga para S. Lucas{Colors.ENDC}")
+    else:
         print(
-            f"""
-        \r{Colors.OKGREEN}Vaga: {nome_vaga}{Colors.ENDC}
-        \rCidade: {cidade}
-        \rEmpresa: {empresa}
-        \rLink: {url}
-        """
+            f"{Colors.BOLD}S. Lucas possui {s_lucas['totalRecords']} vagas:{Colors.ENDC}"
         )
-
-    print(
-        f"{Colors.BOLD}Biofast possui {biofast['totalRecords']} vagas:{Colors.ENDC}"
-    )
-    for item in biofast["data"]:
-        nome_vaga = item["name"]
-        cidade = item["city"]["name"]
-        empresa = item["company"]["name"]
-        url = item["linkVacancy"]
-        print(
-            f"""
-        \r{Colors.OKGREEN}Vaga: {nome_vaga}{Colors.ENDC}
-        \rCidade: {cidade}
-        \rEmpresa: {empresa}
-        \rLink: {url}
-        """)
-
-    print(
-        f"{Colors.BOLD}Lab. Pasteur possui {pasteur['totalRecords']} vagas:{Colors.ENDC}")
-    for item in pasteur["data"]:
-        nome_vaga = item["name"]
-        cidade = item["city"]["name"]
-        empresa = item["company"]["name"]
-        url = item["linkVacancy"]
-        print(
-            f"""
-        \r{Colors.OKGREEN}Vaga: {nome_vaga}{Colors.ENDC}
-        \rCidade: {cidade}
-        \rEmpresa: {empresa}
-        \rLink: {url}
-    """)
-    print(
-        f"{Colors.BOLD}\n\nDB Diagnósticos possui {db['found']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório: {Colors.ENDC}"
-    )
-
-    for items in db["vacancies"]:
-        vaga_titulo = items["title"]
-        vaga_local = items["location"]
-        vaga_id = items["id"]
-        if bool(re.search(regex, vaga_titulo)):
-            link = f"https://platform.senior.com.br/hcmrs/hcm/curriculo/?tenant=dbdiagnosticos&tenantdomain=dbdiagnosticos.com.br&vacancyId={vaga_id}&fromRecruitment=false#!/vacancies/details/{vaga_id}/?order=HIGHLIGHT&page=0&fromRecruitment=false"
-            mais_info = get_diagbr_info(vaga_id)
+        for item in s_lucas["data"]:
+            nome_vaga = item["name"]
+            cidade = item["city"]["name"]
+            empresa = item["company"]["name"]
+            url = item["linkVacancy"]
             print(
                 f"""
-                \r{Colors.OKGREEN}Vaga: {vaga_titulo}{Colors.ENDC}
-                \rLocal: {vaga_local}
-                \rLink da vaga: {link}
-                \rData-fim da vaga: {mais_info['endDate']}
+                \r{Colors.OKGREEN}Vaga: {nome_vaga}{Colors.ENDC}
+                \rCidade: {cidade}
+                \rEmpresa: {empresa}
+                \rLink: {url}
                 """
             )
-    print(
-        f"{Colors.BOLD}\n\nSabin Med. Diag {lab_sabin[0]['qtd']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório: {Colors.ENDC}"
-    )
-    for items in lab_sabin:
+
+    if biofast['totalRecords'] == 0:
+        print(f"{Colors.FAIL}Nenhuma vaga para S. Lucas{Colors.ENDC}")
+    else:
         print(
-            f"""
-            \r{Colors.OKGREEN}Vaga: {items["name"]} {Colors.ENDC}
-            \rlocal: {items["city"]} - {items["state"]}
-            link: \r{items["link"]}
-            """
+            f"{Colors.BOLD}Biofast possui {biofast['totalRecords']} vagas:{Colors.ENDC}"
         )
+        for item in biofast["data"]:
+            nome_vaga = item["name"]
+            cidade = item["city"]["name"]
+            empresa = item["company"]["name"]
+            url = item["linkVacancy"]
+            print(
+                f"""
+            \r{Colors.OKGREEN}Vaga: {nome_vaga}{Colors.ENDC}
+            \rCidade: {cidade}
+            \rEmpresa: {empresa}
+            \rLink: {url}
+            """)
+
+    if pasteur['totalRecords'] == 0:
+        print(f"{Colors.FAIL}Nenhuma vaga para Pasteur{Colors.ENDC}")
+    else:
+        print(
+            f"{Colors.BOLD}Lab. Pasteur possui {pasteur['totalRecords']} vagas:{Colors.ENDC}")
+        for item in pasteur["data"]:
+            nome_vaga = item["name"]
+            cidade = item["city"]["name"]
+            empresa = item["company"]["name"]
+            url = item["linkVacancy"]
+            print(
+                f"""
+            \r{Colors.OKGREEN}Vaga: {nome_vaga}{Colors.ENDC}
+            \rCidade: {cidade}
+            \rEmpresa: {empresa}
+            \rLink: {url}
+        """)
+
+    if db["vacancies"] == 0:
+        print(f"{Colors.FAIL}Nenhuma vaga para DB Diagnósticos{Colors.ENDC}")
+    else:
+        print(
+            f"{Colors.BOLD}\n\nDB Diagnósticos possui {db['found']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório: {Colors.ENDC}"
+        )
+        for items in db["vacancies"]:
+            vaga_titulo = items["title"]
+            vaga_local = items["location"]
+            vaga_id = items["id"]
+            if bool(re.search(REGEX, vaga_titulo)):
+                link = f"https://platform.senior.com.br/hcmrs/hcm/curriculo/?tenant=dbdiagnosticos&tenantdomain=dbdiagnosticos.com.br&vacancyId={vaga_id}&fromRecruitment=false#!/vacancies/details/{vaga_id}/?order=HIGHLIGHT&page=0&fromRecruitment=false"
+                mais_info = get_diagbr_info(vaga_id)
+                print(
+                    f"""
+                    \r{Colors.OKGREEN}Vaga: {vaga_titulo}{Colors.ENDC}
+                    \rLocal: {vaga_local}
+                    \rLink da vaga: {link}
+                    \rData-fim da vaga: {mais_info['endDate']}
+                    """
+                )
+
+    # checar se a lista de vagas está vazia
+    if len(lab_sabin) == 0:
+        print(f"{Colors.FAIL}Nenhuma vaga para Sabin{Colors.ENDC}")
+    else:
+        print(
+            f"{Colors.BOLD}\n\nSabin Med. Diag {lab_sabin[0]['qtd']} vagas, \nMostrando aquelas que contém Biomédico ou Laboratório: {Colors.ENDC}"
+        )
+        for items in lab_sabin:
+            print(
+                f"""
+                \r{Colors.OKGREEN}Vaga: {items["name"]} {Colors.ENDC}
+                \rlocal: {items["city"]} - {items["state"]}
+                link: \r{items["link"]}
+                """
+            )
 
 
 if __name__ == '__main__':
